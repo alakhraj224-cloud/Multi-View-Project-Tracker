@@ -1,118 +1,62 @@
 import { useTaskStore } from "../../store/useTaskStore";
-
-const statuses = ["todo", "inprogress", "review", "done"];
-const priorities = ["critical", "high", "medium", "low"];
-const assignees = ["Alice", "Bob", "Charlie", "David", "Eve", "Ravi"];
+import type { Status, Priority } from "../../types/task";
 
 function FilterBar() {
-  const filters = useTaskStore((s) => s.filters);
-  const setFilters = useTaskStore((s) => s.setFilters);
-  const clearFilters = useTaskStore((s) => s.clearFilters);
+  const { filters, setFilters, clearFilters } = useTaskStore();
 
-  const toggle = (key: "status" | "priority" | "assignee", value: string) => {
+  const toggleArrayValue = (
+    key: "status" | "priority" | "assignee",
+    value: string
+  ) => {
     const current = filters[key];
 
-    const updated = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const exists = (current as string[]).includes(value);
 
-    setFilters({ [key]: updated });
+    setFilters({
+      [key]: exists
+        ? (current as string[]).filter((v) => v !== value)
+        : [...(current as string[]), value],
+    });
   };
 
-  const hasActive =
-    filters.status.length ||
-    filters.priority.length ||
-    filters.assignee.length ||
-    filters.dueDateFrom ||
-    filters.dueDateTo;
-
   return (
-    <div className="p-4 border-b bg-white flex flex-wrap gap-4 items-center">
+    <div className="p-4 bg-white border-b flex flex-wrap gap-3 items-center">
+      
       {/* Status */}
-      <div>
-        <p className="text-xs font-semibold mb-1">Status</p>
-        <div className="flex gap-2">
-          {statuses.map((s) => (
-            <button
-              key={s}
-              onClick={() => toggle("status", s)}
-              className={`px-2 py-1 text-xs rounded border ${
-                filters.status.includes(s as any)
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
+      {(["todo", "in-progress", "in-review", "done"] as Status[]).map((s) => (
+        <button
+          key={s}
+          onClick={() => toggleArrayValue("status", s)}
+          className={`px-2 py-1 border rounded ${
+            filters.status.includes(s) ? "bg-blue-500 text-white" : ""
+          }`}
+        >
+          {s}
+        </button>
+      ))}
 
       {/* Priority */}
-      <div>
-        <p className="text-xs font-semibold mb-1">Priority</p>
-        <div className="flex gap-2">
-          {priorities.map((p) => (
-            <button
-              key={p}
-              onClick={() => toggle("priority", p)}
-              className={`px-2 py-1 text-xs rounded border ${
-                filters.priority.includes(p as any)
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-100"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
+      {(["critical", "high", "medium", "low"] as Priority[]).map((p) => (
+        <button
+          key={p}
+          onClick={() => toggleArrayValue("priority", p)}
+          className={`px-2 py-1 border rounded ${
+            filters.priority.includes(p) ? "bg-red-500 text-white" : ""
+          }`}
+        >
+          {p}
+        </button>
+      ))}
 
-      {/* Assignee */}
-      <div>
-        <p className="text-xs font-semibold mb-1">Assignee</p>
-        <div className="flex gap-2 flex-wrap">
-          {assignees.map((a) => (
-            <button
-              key={a}
-              onClick={() => toggle("assignee", a)}
-              className={`px-2 py-1 text-xs rounded border ${
-                filters.assignee.includes(a)
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-100"
-              }`}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Date */}
-      <div>
-        <p className="text-xs font-semibold mb-1">Due Date</p>
-        <div className="flex gap-2">
-          <input
-            type="date"
-            value={filters.dueDateFrom || ""}
-            onChange={(e) => setFilters({ dueDateFrom: e.target.value })}
-            className="border px-2 py-1 text-xs rounded"
-          />
-          <input
-            type="date"
-            value={filters.dueDateTo || ""}
-            onChange={(e) => setFilters({ dueDateTo: e.target.value })}
-            className="border px-2 py-1 text-xs rounded"
-          />
-        </div>
-      </div>
-
-      {hasActive && (
+      {/* Clear */}
+      {(filters.status.length ||
+        filters.priority.length ||
+        filters.assignee.length) > 0 && (
         <button
           onClick={clearFilters}
           className="ml-auto text-sm text-indigo-600 hover:underline"
         >
-          Clear all
+          Clear Filters
         </button>
       )}
     </div>
